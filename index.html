@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElektronikHobi | İkas Pro Custom Tema</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome İkonlar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandDark: '#0f172a',
+                        brandPrimary: '#2563eb',
+                        brandAccent: '#f97316',
+                        brandEmerald: '#10b981',
+                        brandWhatsapp: '#25d366'
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased pb-24">
+
+    <!-- DUYURU BARI -->
+    <div class="bg-brandDark text-slate-300 text-xs py-2 px-4 text-center font-medium">
+        <span>🚀 1000 TL Üstü Alışverişlerde Ücretsiz Kargo | İkas Studio Pro Mimari Aktif</span>
+    </div>
+
+    <!-- HEADER & CANLI ARAMA -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4 relative">
+            
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center gap-2 text-xl font-extrabold text-brandDark tracking-tight shrink-0">
+                <span class="w-9 h-9 bg-brandPrimary rounded-xl flex items-center justify-center text-white shadow-md shadow-brandPrimary/30">
+                    <i class="fa-solid fa-bolt text-base"></i>
+                </span>
+                <span>ELEKTRONİK<span class="text-brandAccent">HOBİ</span></span>
+            </a>
+
+            <!-- Arama Kutusu ve Pop-up Sonuçları -->
+            <div class="hidden md:flex items-center flex-1 max-w-lg mx-6 relative">
+                <div class="relative w-full">
+                    <input type="text" id="searchInput" oninput="handleLiveSearch()" onfocus="showSearchDropdown()" placeholder="Ürün, marka veya kategori ara..." class="w-full bg-slate-100 border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brandPrimary transition">
+                    <button class="absolute right-3 top-2.5 text-slate-400 hover:text-brandPrimary">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Arama Öneri Kutusu -->
+                <div id="searchDropdown" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 hidden z-50 space-y-4">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Eşleşen Ürünler</span>
+                        <div id="searchSuggestionsList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sağ Aksiyonlar -->
+            <div class="flex items-center gap-2 text-xs font-semibold">
+                <button onclick="toggleWishlistModal()" class="relative p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-heart text-red-500"></i>
+                    <span class="hidden sm:inline">Favoriler</span>
+                    <span id="wishlistBadge" class="w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">0</span>
+                </button>
+                
+                <!-- Karşılaştır Butonu -->
+                <button onclick="toggleCompareModal()" class="relative p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <span class="hidden sm:inline">Karşılaştır</span>
+                    <span id="compareBadge" class="w-4 h-4 bg-brandPrimary text-white rounded-full text-[10px] flex items-center justify-center font-bold">0</span>
+                </button>
+
+                <!-- Dinamik Hesap Alanı (Giriş / Kayıt veya Çıkış Yap) -->
+                <div id="accountArea" class="flex items-center gap-1.5">
+                    <button onclick="openAuthModal('login')" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition cursor-pointer">
+                        Giriş Yap
+                    </button>
+                    <button onclick="openAuthModal('register')" class="p-2.5 bg-brandPrimary text-white hover:bg-blue-700 rounded-xl transition cursor-pointer">
+                        Kayıt Ol
+                    </button>
+                </div>
+
+                <button onclick="toggleCart()" class="px-4 py-2.5 bg-brandPrimary hover:bg-blue-700 text-white rounded-xl shadow-md shadow-brandPrimary/20 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="hidden sm:inline">Sepet</span>
+                    <span id="cartCount" class="w-5 h-5 bg-brandAccent text-white rounded-full text-[10px] flex items-center justify-center font-bold">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- SAYFA GÖRÜNÜMÜ: ANA LİSTELEME VE SOL FİLTRE -->
+    <main id="mainView" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- SOL DETAYLI FİLTRE PANELİ -->
+            <div class="space-y-6 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm h-fit">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-brandPrimary"></i> Detaylı Filtreler
+                    </h3>
+                    <button onclick="resetFilters()" class="text-[11px] text-brandAccent hover:underline font-semibold cursor-pointer">Sıfırla</button>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block text-xs font-bold text-slate-700">Kategoriler</label>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="catRadio" value="Tümü" checked onchange="applyFilters()" class="accent-brandPrimary"> Tüm Kategoriler</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="catRadio" value="3D" onchange="applyFilters()" class="accent-brandPrimary"> 3D Yazıcı & Filament</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="catRadio" value="Arduino" onchange="applyFilters()" class="accent-brandPrimary"> Arduino & Sensör</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="catRadio" value="Robotik" onchange="applyFilters()" class="accent-brandPrimary"> Robotik Setler</label>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-4 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-700">Markalar</label>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="Esun" onchange="applyFilters()" class="brand-check accent-brandPrimary rounded"> Esun</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="Arduino" onchange="applyFilters()" class="brand-check accent-brandPrimary rounded"> Arduino</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="RoboMaker" onchange="applyFilters()" class="brand-check accent-brandPrimary rounded"> RoboMaker</label>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-4 border-t border-slate-100">
+                    <div class="flex justify-between text-xs font-bold text-slate-700">
+                        <span>Maksimum Fiyat:</span>
+                        <span id="priceLabel" class="text-brandPrimary font-mono">₺2000</span>
+                    </div>
+                    <input type="range" id="priceRange" min="50" max="2000" step="50" value="2000" oninput="applyFilters()" class="w-full accent-brandPrimary cursor-pointer">
+                </div>
+
+                <div class="pt-4 border-t border-slate-100">
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        <input type="checkbox" id="inStockCheck" onchange="applyFilters()" class="accent-brandPrimary rounded"> Sadece Stoktakiler
+                    </label>
+                </div>
+            </div>
+
+            <!-- SAĞ TARAF: ÜRÜN LİSTESİ -->
+            <div class="lg:col-span-3 space-y-6">
+                <div class="flex items-center justify-between bg-white px-6 py-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <span id="resultCount" class="text-xs font-bold text-slate-600">Ürünler yükleniyor...</span>
+                    <select id="sortSelect" onchange="applyFilters()" class="bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none">
+                        <option value="default">Önerilen Sıralama</option>
+                        <option value="asc">Fiyata Göre Artan</option>
+                        <option value="desc">Fiyata Göre Azalan</option>
+                    </select>
+                </div>
+
+                <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SAYFA GÖRÜNÜMÜ: AYRI ÜRÜN DETAY SAYFASI -->
+    <div id="productDetailView" class="max-w-7xl mx-auto px-4 sm:px-6 py-10 hidden">
+        <button onclick="backToHome()" class="mb-6 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-2 w-max cursor-pointer">
+            <i class="fa-solid fa-arrow-left"></i> Geri Dön
+        </button>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div class="space-y-4">
+                <div class="h-96 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 relative overflow-hidden shadow-inner">
+                    <i id="detailBigIcon" class="fa-solid fa-cube text-7xl text-slate-300"></i>
+                    <span class="absolute top-4 left-4 bg-brandAccent text-white text-xs font-bold px-3 py-1 rounded-lg">İyi Fiyat</span>
+                </div>
+            </div>
+
+            <div class="space-y-6 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <span id="detailBrandCat" class="text-xs font-bold text-brandPrimary uppercase tracking-wider">MARKA · KATEGORİ</span>
+                    <h1 id="detailTitle" class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug">Ürün Adı</h1>
+                    
+                    <div class="flex items-center gap-3">
+                        <span id="detailPrice" class="text-3xl font-black text-brandPrimary">₺0.00</span>
+                        <span id="detailOldPrice" class="text-sm text-slate-400 line-through"></span>
+                    </div>
+
+                    <p id="detailDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed">Açıklama</p>
+
+                    <div class="space-y-3 pt-4 border-t border-slate-100">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Renk / Model Seçimi:</label>
+                            <div id="colorOptionsContainer" class="flex gap-2"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Ölçü / Kalınlık:</label>
+                            <div id="sizeOptionsContainer" class="flex gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-6 border-t border-slate-200">
+                    <div class="flex items-center gap-3">
+                        <button id="detailWishlistBtn" onclick="toggleWishlist(currentSelectedProduct.id); showDetailView();" class="px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-2xl transition cursor-pointer flex items-center gap-2">
+                            <i class="fa-solid fa-heart"></i> Favorilere Ekle
+                        </button>
+                        <button onclick="addCurrentProductToCart()" class="flex-1 py-3.5 bg-brandAccent hover:bg-orange-600 text-white font-bold text-xs rounded-2xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cart-shopping"></i> Sepete Ekle
+                        </button>
+                    </div>                  
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WHATSAPP CANLI DESTEK -->
+    <a href="https://wa.me/905554443322" target="_blank" class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-brandWhatsapp hover:scale-110 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition duration-300">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- GİRİŞ YAP / KAYIT OL AYRI MODALLAR -->
+    <div id="authModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            
+            <!-- Sadece Giriş Yap Formu -->
+            <div id="loginFormContainer" class="space-y-5 hidden">
+                <div class="text-center space-y-1">
+                    <h3 class="font-bold text-xl text-slate-900">Hesaba Giriş Yap</h3>
+                    <p class="text-xs text-slate-500">Bilgilerinizle giriş yapın.</p>
+                </div>
+                <div class="space-y-4">
+                    <input type="email" id="loginEmailInput" placeholder="E-posta adresiniz" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:border-brandPrimary">
+                    <input type="password" id="loginPasswordInput" placeholder="Şifreniz" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:border-brandPrimary">
+                    <button onclick="simulateLogin()" class="w-full py-3.5 bg-brandPrimary text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">Giriş Yap</button>
+                </div>
+                <!-- Kayıt Ol Yönlendirmesi -->
+                <div class="text-center pt-2 border-t border-slate-100">
+                    <p class="text-xs text-slate-500">Hesabınız yok mu? <button onclick="openAuthModal('register')" class="text-brandPrimary font-bold hover:underline cursor-pointer">Kayıt Ol</button></p>
+                </div>
+            </div>
+
+            <!-- Sadece Kayıt Ol Formu & E-Posta Kod Onayı -->
+            <div id="registerFormContainer" class="space-y-5 hidden">
+                <div id="regStep1" class="space-y-4">
+                    <div class="text-center space-y-1">
+                        <h3 class="font-bold text-xl text-slate-900">Yeni Hesap Oluştur</h3>
+                        <p class="text-xs text-slate-500">E-posta ve şifrenizi belirleyin.</p>
+                    </div>
+                    <input type="email" id="regEmail" placeholder="ornek@gmail.com" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:border-brandPrimary">
+                    <input type="password" id="regPassword" placeholder="Şifre oluşturun" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 focus:outline-none focus:border-brandPrimary">
+                    <button onclick="sendRegCode()" class="w-full py-3.5 bg-brandPrimary text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">Kayıt Ol & Kodu Gönder</button>
+                </div>
+                
+                <div id="regStep2" class="space-y-4 hidden">
+                    <div class="text-center space-y-1">
+                        <h3 class="font-bold text-xl text-slate-900">E-Posta Onayı</h3>
+                        <p class="text-xs text-slate-500">Gönderilen 6 haneli kodu girin (Simülasyon Kodu: 123456)</p>
+                    </div>
+                    <input type="text" id="regCodeInput" maxlength="6" placeholder="123456" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-center text-lg font-mono text-slate-800 focus:outline-none">
+                    <button onclick="verifyRegCode()" class="w-full py-3.5 bg-brandEmerald text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">Kodu Onayla ve Kaydı Tamamla</button>
+                </div>
+
+                <!-- Giriş Yap Yönlendirmesi -->
+                <div class="text-center pt-2 border-t border-slate-100">
+                    <p class="text-xs text-slate-500">Zaten hesabınız var mı? <button onclick="openAuthModal('login')" class="text-brandPrimary font-bold hover:underline cursor-pointer">Giriş Yap</button></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAVORİLER MODALI -->
+    <div id="wishlistModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2"><i class="fa-solid fa-heart text-red-500"></i> Favorilerim</h3>
+                <button onclick="toggleWishlistModal()" class="cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="wishlistItemsList" class="space-y-3 max-h-[50vh] overflow-y-auto">
+                <p class="text-xs text-slate-400 text-center py-6">Favori listeniz boş.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- KARŞILAŞTIRMA MODALI -->
+    <div id="compareModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-brandPrimary"></i> Ürün Karşılaştırma Modülü</h3>
+                <button onclick="toggleCompareModal()" class="cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="compareContent" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <p class="text-xs text-slate-400 text-center col-span-2 py-6">Karşılaştırma için ürün seçilmedi.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEPET ÇEKMECESİ -->
+    <div id="cartDrawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end hidden">
+        <div class="bg-white w-full max-w-md h-full p-6 flex flex-col justify-between shadow-2xl">
+            <div class="space-y-6">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                    <h3 class="font-bold text-sm text-slate-900"><i class="fa-solid fa-cart-shopping text-brandPrimary"></i> Sepetim</h3>
+                    <button onclick="toggleCart()" class="cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div id="cartItemsList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-400 text-center py-8">Sepetiniz boş.</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 pt-4 border-t border-slate-200">
+                <div class="flex justify-between text-sm font-bold text-slate-900">
+                    <span>Toplam:</span>
+                    <span id="cartTotalPrice" class="text-brandPrimary font-mono">₺0.00</span>
+                </div>
+                <button onclick="proceedToCheckout()" class="w-full py-4 bg-brandAccent hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-lg transition cursor-pointer">
+                    Satın Al / Siparişi Tamamla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT MİMARİSİ -->
+    <script>
+        const products = [
+            { id: 1, name: "Esun PLA+ 1.75mm 1kg 3D Filamenti", category: "3D", brand: "Esun", price: 549.00, oldPrice: 650.00, inStock: true, badge: "Çok Satan", desc: "Yüksek mukavemetli filament.", icon: "fa-cube", colors: ["Siyah", "Beyaz", "Mavi"], sizes: ["1.75mm (1kg)", "3.00mm (1kg)", "0.5mm (500g)"] },
+            { id: 2, name: "Arduino Uno R3 Geliştirme Kartı", category: "Arduino", brand: "Arduino", price: 289.00, oldPrice: null, inStock: true, badge: "İyi Fiyat", desc: "Klon CH340 çipli.", icon: "fa-microchip", colors: ["Mavi PCB", "Siyah PCB", "Kırmızı PCB"], sizes: ["Standart", "Pinli", "Pinsiz"] },
+            { id: 3, name: "4WD Akıllı Robot Araç Kiti", category: "Robotik", brand: "RoboMaker", price: 1250.00, oldPrice: 1400.00, inStock: true, badge: "Fırsat Ürünü", desc: "Full robot set.", icon: "fa-robot", colors: ["Şeffaf", "Siyah", "Mavi"], sizes: ["2 Katlı Set", "3 Katlı Set", "Mini Set"] },
+            { id: 4, name: "HC-SR04 Ultrasonik Mesafe Sensörü", category: "Arduino", brand: "Sensorex", price: 45.00, oldPrice: null, inStock: true, badge: "Stokta", desc: "Hassas mesafe ölçer.", icon: "fa-bolt", colors: ["Standart Mavi", "Yeşil", "Kırmızı"], sizes: ["Tekli", "5li Paket", "10lu Paket"] },
+            { id: 5, name: "ESP32 Wi-Fi & Bluetooth Modül", category: "Arduino", brand: "RoboMaker", price: 320.00, oldPrice: 380.00, inStock: true, badge: "Yeni", desc: "IoT projeleri için.", icon: "fa-wifi", colors: ["Siyah", "Mor", "Yeşil"], sizes: ["30 Pin", "38 Pin", "NodeMCU"] },
+            { id: 6, name: "Ender 3 3D Yazıcı Tabla Camı", category: "3D", brand: "Esun", price: 390.00, oldPrice: 450.00, inStock: true, badge: "Popüler", desc: "Borosilikat cam tabla.", icon: "fa-print", colors: ["Siyah Karbon", "Şeffaf Cam", "Manyetik"], sizes: ["220x220mm", "235x235mm", "300x300mm"] },
+            { id: 7, name: "SG90 9g Mikro Servo Motor", category: "Robotik", brand: "RoboMaker", price: 95.00, oldPrice: 120.00, inStock: true, badge: "İyi Fiyat", desc: "Mini robot kolları için.", icon: "fa-gears", colors: ["Mavi", "Şeffaf", "Siyah"], sizes: ["180 Derece", "360 Derece", "Metal Dişli"] },
+            { id: 8, name: "Breadboard 840 Nokta Deney Kartı", category: "Arduino", brand: "Arduino", price: 65.00, oldPrice: null, inStock: true, badge: "Stokta", desc: "Lehim gerektirmez.", icon: "fa-network-wired", colors: ["Beyaz", "Şeffaf", "Siyah"], sizes: ["Büyük Boy", "Orta Boy", "Mini Boy"] }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+		let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+		let compareList = [];
+		let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        let currentSelectedProduct = null;
+        let selectedColor = '';
+        let selectedSize = '';
+        let currentPage = 1;
+        const itemsPerPage = 6;
+        let tempRegData = null;
+
+        function renderProducts(items) {
+            const grid = document.getElementById('productGrid');
+            const countEl = document.getElementById('resultCount');
+            grid.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedItems = items.slice(startIndex, endIndex);
+
+            countEl.textContent = `${items.length} ürün listeleniyor (Sayfa ${currentPage} / ${Math.ceil(items.length / itemsPerPage) || 1})`;
+
+            if(paginatedItems.length === 0) {
+                grid.innerHTML = `<p class="text-xs text-slate-400 col-span-3 text-center py-12">Aradığınız kriterlere uygun ürün bulunamadı.</p>`;
+                renderPagination(0);
+                return;
+            }
+
+            paginatedItems.forEach(p => {
+                const isWishlisted = wishlist.some(w => w.id === p.id);
+                const isCompared = compareList.some(c => c.id === p.id);
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl border border-slate-200/80 p-4 space-y-4 shadow-sm hover:shadow-lg transition group flex flex-col justify-between";
+                card.innerHTML = `
+                    <div class="space-y-3 cursor-pointer" onclick="openProductDetail(${p.id})">
+                        <div class="h-44 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 font-bold relative overflow-hidden">
+                            <i class="fa-solid ${p.icon} text-4xl text-slate-300"></i>
+                            <span class="absolute top-3 left-3 bg-brandAccent text-white text-[9px] font-bold px-2 py-1 rounded-md shadow">${p.badge}</span>
+                            
+                            <!-- Favori Butonu -->
+                            <button onclick="event.stopPropagation(); toggleWishlist(${p.id})" class="absolute top-3 right-12 w-8 h-8 rounded-lg ${isWishlisted ? 'bg-red-500 text-white shadow-md' : 'bg-white/90 text-slate-600 hover:bg-red-500 hover:text-white'} transition duration-200 flex items-center justify-center shadow-sm cursor-pointer">
+                                <i class="fa-solid fa-heart text-xs"></i>
+                            </button>
+                            <!-- Karşılaştır Butonu -->
+                            <button onclick="event.stopPropagation(); toggleCompare(${p.id})" class="absolute top-3 right-3 w-8 h-8 rounded-lg ${isCompared ? 'bg-brandPrimary text-white shadow-md' : 'bg-white/90 text-slate-600 hover:bg-brandPrimary hover:text-white'} transition duration-200 flex items-center justify-center shadow-sm cursor-pointer">
+                                <i class="fa-solid fa-scale-balanced text-xs"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 uppercase font-semibold">${p.brand} · ${p.category}</span>
+                            <h3 class="font-bold text-xs text-slate-900 line-clamp-2">${p.name}</h3>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 mt-2">
+                        <span class="text-brandPrimary font-extrabold text-sm">₺${p.price.toFixed(2)}</span>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="event.stopPropagation(); quickAddToCart(${p.id})" class="px-2.5 py-2 bg-brandAccent hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition cursor-pointer" title="Hızlı Sepete Ekle">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                            <button onclick="openProductDetail(${p.id})" class="px-3 py-2 bg-slate-900 hover:bg-brandPrimary text-white text-xs font-bold rounded-xl transition cursor-pointer">İncele</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            renderPagination(items.length);
+        }
+
+		function quickAddToCart(id) {
+            const product = products.find(p => p.id === id);
+            if(!product) return;
+            const fullName = `${product.name} (${product.colors[0]}, ${product.sizes[0]})`;
+            
+            const existing = cart.find(i => i.name === fullName);
+            if(existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ name: fullName, price: product.price, qty: 1 });
+            }
+            updateCart();
+            toggleCart();
+        }
+
+        function renderPagination(totalItems) {
+            let paginationContainer = document.getElementById('paginationContainer');
+            if (!paginationContainer) {
+                paginationContainer = document.createElement('div');
+                paginationContainer.id = 'paginationContainer';
+                paginationContainer.className = 'flex items-center justify-center gap-2 mt-8 pt-4';
+                document.getElementById('productGrid').after(paginationContainer);
+            }
+
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 disabled:opacity-40 hover:bg-slate-50 cursor-pointer">
+                    <i class="fa-solid fa-chevron-left"></i> Geri
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `
+                    <button onclick="changePage(${i})" class="w-9 h-9 rounded-xl text-xs font-bold transition cursor-pointer ${currentPage === i ? 'bg-brandPrimary text-white shadow-md' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            html += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 disabled:opacity-40 hover:bg-slate-50 cursor-pointer">
+                    İleri <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            `;
+
+            paginationContainer.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            applyFilters();
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+        }
+
+        function showSearchDropdown() { document.getElementById('searchDropdown').classList.remove('hidden'); }
+        function handleLiveSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const listContainer = document.getElementById('searchSuggestionsList');
+            showSearchDropdown();
+            if(!query) { listContainer.innerHTML = ''; return; }
+            const matched = products.filter(p => p.name.toLowerCase().includes(query));
+            listContainer.innerHTML = '';
+            matched.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "p-2 hover:bg-slate-50 rounded-xl cursor-pointer flex justify-between items-center text-xs";
+                div.onclick = () => { 
+                    document.getElementById('searchInput').value = ''; 
+                    document.getElementById('searchDropdown').classList.add('hidden');
+                    openProductDetail(p.id); 
+                };
+                div.innerHTML = `<span>${p.name}</span><span class="font-bold text-brandPrimary">₺${p.price}</span>`;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function applyFilters() {
+            const selectedCat = document.querySelector('input[name="catRadio"]:checked').value;
+            const maxPrice = parseFloat(document.getElementById('priceRange').value);
+            document.getElementById('priceLabel').textContent = `₺${maxPrice}`;
+            const inStockOnly = document.getElementById('inStockCheck').checked;
+            const selectedBrands = Array.from(document.querySelectorAll('.brand-check:checked')).map(cb => cb.value);
+            const sortValue = document.getElementById('sortSelect').value;
+
+            let filtered = products.filter(p => {
+                if(selectedCat !== 'Tümü' && p.category !== selectedCat) return false;
+                if(p.price > maxPrice) return false;
+                if(inStockOnly && !p.inStock) return false;
+                if(selectedBrands.length > 0 && !selectedBrands.includes(p.brand)) return false;
+                return true;
+            });
+
+            if (sortValue === 'asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortValue === 'desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            }
+
+            renderProducts(filtered);
+        }
+
+        function resetFilters() {
+            document.querySelector('input[name="catRadio"][value="Tümü"]').checked = true;
+            document.getElementById('priceRange').value = 2000;
+            document.getElementById('inStockCheck').checked = false;
+            document.querySelectorAll('.brand-check').forEach(cb => cb.checked = false);
+            document.getElementById('sortSelect').value = 'default';
+            currentPage = 1;
+            applyFilters();
+        }
+
+        function openProductDetail(id) {
+            currentSelectedProduct = products.find(p => p.id === id);
+            history.pushState({ view: 'detail', id: id }, '', `#urun-${id}`);
+            showDetailView();
+        }
+
+        function showDetailView() {
+            document.getElementById('mainView').classList.add('hidden');
+            document.getElementById('productDetailView').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            document.getElementById('detailBrandCat').textContent = `${currentSelectedProduct.brand} · ${currentSelectedProduct.category}`;
+            document.getElementById('detailTitle').textContent = currentSelectedProduct.name;
+            document.getElementById('detailPrice').textContent = `₺${currentSelectedProduct.price.toFixed(2)}`;
+            
+            const oldPriceEl = document.getElementById('detailOldPrice');
+            if (currentSelectedProduct.oldPrice) {
+                oldPriceEl.textContent = `₺${currentSelectedProduct.oldPrice.toFixed(2)}`;
+            } else {
+                oldPriceEl.textContent = '';
+            }
+            document.getElementById('detailDesc').textContent = currentSelectedProduct.desc;
+            document.getElementById('detailBigIcon').className = `fa-solid ${currentSelectedProduct.icon} text-7xl text-slate-300`;
+
+            const isWish = wishlist.some(w => w.id === currentSelectedProduct.id);
+            const detailWishBtn = document.getElementById('detailWishlistBtn');
+            if (detailWishBtn) {
+                detailWishBtn.className = `px-4 py-3 rounded-2xl border font-bold text-xs transition cursor-pointer flex items-center gap-2 ${isWish ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/30' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`;
+                detailWishBtn.innerHTML = `<i class="fa-solid fa-heart"></i> ${isWish ? 'Favorilerde' : 'Favorilere Ekle'}`;
+            }
+
+            const colorContainer = document.getElementById('colorOptionsContainer');
+            colorContainer.innerHTML = '';
+            currentSelectedProduct.colors.forEach((col, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${idx === 0 ? 'border-brandPrimary bg-blue-50 text-brandPrimary' : 'border-slate-200 bg-white text-slate-700 hover:border-brandPrimary'}`;
+                btn.textContent = col;
+                btn.onclick = () => {
+                    document.querySelectorAll('#colorOptionsContainer button').forEach(b => b.className = "px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-brandPrimary");
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold border border-brandPrimary bg-blue-50 text-brandPrimary";
+                    selectedColor = col;
+                };
+                colorContainer.appendChild(btn);
+            });
+            selectedColor = currentSelectedProduct.colors[0];
+
+            const sizeContainer = document.getElementById('sizeOptionsContainer');
+            sizeContainer.innerHTML = '';
+            currentSelectedProduct.sizes.forEach((sz, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${idx === 0 ? 'border-brandPrimary bg-blue-50 text-brandPrimary' : 'border-slate-200 bg-white text-slate-700 hover:border-brandPrimary'}`;
+                btn.textContent = sz;
+                btn.onclick = () => {
+                    document.querySelectorAll('#sizeOptionsContainer button').forEach(b => b.className = "px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-brandPrimary");
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold border border-brandPrimary bg-blue-50 text-brandPrimary";
+                    selectedSize = sz;
+                };
+                sizeContainer.appendChild(btn);
+            });
+            selectedSize = currentSelectedProduct.sizes[0];
+        }
+
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.view === 'detail') {
+                currentSelectedProduct = products.find(p => p.id === event.state.id);
+                showDetailView();
+            } else {
+                backToHome(false);
+            }
+        });
+
+        function backToHome(pushState = true) {
+            if(pushState) history.pushState({ view: 'home' }, '', window.location.pathname);
+            document.getElementById('productDetailView').classList.add('hidden');
+            document.getElementById('mainView').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function addCurrentProductToCart() {
+			if(!currentSelectedProduct) return;
+			const fullName = `${currentSelectedProduct.name} (${selectedColor}, ${selectedSize})`;
+			cart.push({ name: fullName, price: currentSelectedProduct.price, qty: 1 });
+			
+			localStorage.setItem('cart', JSON.stringify(cart)); // Kalıcı hale getirildi
+			updateCart();
+			toggleCart();
+		}
+
+        // Giriş ve Kayıt İşlemleri (LocalStorage Destekli)
+        function openAuthModal(type) {
+            document.getElementById('authModal').classList.remove('hidden');
+            if(type === 'login') {
+                document.getElementById('loginFormContainer').classList.remove('hidden');
+                document.getElementById('registerFormContainer').classList.add('hidden');
+            } else {
+                document.getElementById('loginFormContainer').classList.add('hidden');
+                document.getElementById('registerFormContainer').classList.remove('hidden');
+                document.getElementById('regStep1').classList.remove('hidden');
+                document.getElementById('regStep2').classList.add('hidden');
+            }
+        }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+        function simulateLogin() {
+            const emailInput = document.getElementById('loginEmailInput').value.trim();
+            const passInput = document.getElementById('loginPasswordInput').value.trim();
+
+            if (!emailInput || !passInput) {
+                alert("Lütfen e-posta adresinizi ve şifrenizi eksiksiz girin.");
+                return;
+            }
+
+            const savedUser = JSON.parse(localStorage.getItem('registeredUser'));
+
+            if (!savedUser) {
+                alert("Sistemde kayıtlı böyle bir kullanıcı bulunamadı! Lütfen önce 'Kayıt Ol' butonundan hesabınızı oluşturun.");
+                return;
+            }
+
+            if (savedUser.email === emailInput && savedUser.password === passInput) {
+                isLoggedIn = true;
+                localStorage.setItem('isLoggedIn', 'true');
+                alert("Giriş başarılı! Hoş geldiniz.");
+                closeAuthModal();
+                updateAccountArea();
+            } else {
+                alert("Hatalı e-posta adresi veya şifre! Lütfen tekrar deneyin.");
+            }
+        }
+
+        function sendRegCode() {
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPassword').value.trim();
+
+            if (!email || !pass) {
+                alert("Lütfen geçerli bir e-posta adresi ve şifre belirleyin.");
+                return;
+            }
+
+            if (!email.includes('@') || !email.includes('.')) {
+                alert("Lütfen geçerli bir e-posta formatı girin (ör: ornek@gmail.com).");
+                return;
+            }
+
+            // Daha önce kayıt olunmuş mu kontrol et
+            const savedUser = JSON.parse(localStorage.getItem('registeredUser'));
+            if (savedUser && savedUser.email === email) {
+                alert("Bu e-posta adresi ile zaten kayıt oldunuz! Giriş sayfasına yönlendiriliyorsunuz.");
+                openAuthModal('login');
+                return;
+            }
+
+            tempRegData = { email: email, password: pass };
+            alert(`Doğrulama kodunuz ${email} adresine gönderildi! (Simülasyon Doğrulama Kodu: 123456)`);
+            document.getElementById('regStep1').classList.add('hidden');
+            document.getElementById('regStep2').classList.remove('hidden');
+        }
+
+        function verifyRegCode() {
+            const inputCode = document.getElementById('regCodeInput').value.trim();
+            if (inputCode === "123456") {
+                localStorage.setItem('registeredUser', JSON.stringify(tempRegData));
+                isLoggedIn = true;
+                localStorage.setItem('isLoggedIn', 'true');
+                alert("E-posta adresiniz başarıyla doğrulandı ve hesabınız oluşturuldu! Oturumunuz açıldı.");
+                closeAuthModal();
+                updateAccountArea();
+            } else {
+                alert("Girdiğiniz kod hatalı! Lütfen 123456 kodunu girin.");
+            }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            localStorage.removeItem('isLoggedIn');
+            alert("Hesaptan çıkış yapıldı.");
+            updateAccountArea();
+        }
+
+        function updateAccountArea() {
+            const area = document.getElementById('accountArea');
+            if(isLoggedIn) {
+                area.innerHTML = `<button onclick="logout()" class="p-2.5 bg-red-50 text-red-600 rounded-xl cursor-pointer font-bold">Çıkış Yap</button>`;
+            } else {
+                area.innerHTML = `
+                    <button onclick="openAuthModal('login')" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer">Giriş Yap</button>
+                    <button onclick="openAuthModal('register')" class="p-2.5 bg-brandPrimary text-white hover:bg-blue-700 rounded-xl cursor-pointer">Kayıt Ol</button>
+                `;
+            }
+        }
+
+        // Karşılaştırma Modülü
+        function toggleCompare(id) {
+            const index = compareList.findIndex(c => c.id === id);
+            if(index > -1) compareList.splice(index, 1);
+            else {
+                if(compareList.length >= 2) { alert("En fazla 2 ürün karşılaştırılabilir."); return; }
+                compareList.push(products.find(p => p.id === id));
+            }
+            document.getElementById('compareBadge').textContent = compareList.length;
+            applyFilters();
+            renderCompareModal();
+        }
+        function toggleCompareModal() { document.getElementById('compareModal').classList.toggle('hidden'); }
+        function renderCompareModal() {
+            const container = document.getElementById('compareContent');
+            if(compareList.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center col-span-2 py-6">Ürün seçilmedi.</p>`; return; }
+            container.innerHTML = compareList.map(item => `<div class="p-4 border rounded-2xl bg-slate-50"><h4 class="font-bold text-xs">${item.name}</h4><span class="text-brandPrimary font-bold text-xs">₺${item.price}</span></div>`).join('');
+        }
+
+        // Favori ve Sepet Modülleri
+        function toggleWishlist(id) {
+			const idx = wishlist.findIndex(w => w.id === id);
+			if(idx > -1) wishlist.splice(idx, 1); 
+			else wishlist.push(products.find(p => p.id === id));
+			
+			localStorage.setItem('wishlist', JSON.stringify(wishlist)); // Kalıcı hale getirildi
+			document.getElementById('wishlistBadge').textContent = wishlist.length;
+			applyFilters();
+			renderWishlistModal();
+		}
+
+        function toggleWishlistModal() { 
+            document.getElementById('wishlistModal').classList.toggle('hidden'); 
+            renderWishlistModal();
+        }
+
+        function renderWishlistModal() {
+            const list = document.getElementById('wishlistItemsList');
+            if(wishlist.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Favori listeniz boş.</p>`;
+                return;
+            }
+            list.innerHTML = wishlist.map(item => `
+                <div class="p-3 bg-slate-50 border rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold text-slate-900 block">${item.name}</span>
+                        <span class="text-brandPrimary font-bold">₺${item.price.toFixed(2)}</span>
+                    </div>
+                    <button onclick="toggleWishlist(${item.id})" class="text-slate-400 hover:text-red-500 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function toggleCart() { document.getElementById('cartDrawer').classList.toggle('hidden'); }
+        function updateCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            const list = document.getElementById('cartItemsList');
+            const count = document.getElementById('cartCount');
+            const total = document.getElementById('cartTotalPrice');
+            
+            if(cart.length === 0) { 
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Sepetiniz boş.</p>`; 
+                count.textContent = '0'; 
+                total.textContent = '₺0.00'; 
+                return; 
+            }
+
+            list.innerHTML = cart.map((item, idx) => `
+                <div class="p-3 bg-slate-50 border rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold text-slate-900 block">${item.name}</span>
+                        <span class="text-slate-500">Adet: ${item.qty} · ₺${(item.price * item.qty).toFixed(2)}</span>
+                    </div>
+                    <button onclick="removeFromCart(${idx})" class="text-slate-400 hover:text-red-500 p-1 cursor-pointer" title="Ürünü Kaldır">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            count.textContent = cart.reduce((acc, i) => acc + i.qty, 0);
+            total.textContent = `₺${cart.reduce((acc, i) => acc + (i.price * i.qty), 0).toFixed(2)}`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function proceedToCheckout() {
+            if(!isLoggedIn) {
+                alert("Satın almak için lütfen giriş yapın.");
+                toggleCart();
+                openAuthModal('login');
+            } else {
+                alert("Ödeme ekranına yönlendiriliyorsunuz!");
+            }
+        }
+
+        // Başlangıç Çalıştırma
+			updateAccountArea();
+			document.getElementById('wishlistBadge').textContent = wishlist.length; // Sayfa açılınca sayaç güncellenir
+			updateCart(); // Sayfa açılınca sepet yüklenir
+			applyFilters();
+    </script>
+</body>
+</html>
